@@ -1,0 +1,53 @@
+plugins {
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("io.micronaut.application") version "1.5.0"
+}
+
+version = "0.1"
+group = "muschterm.finance_api_rest"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("muschterm.finance_api_rest.*")
+    }
+}
+
+dependencies {
+    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("io.micronaut.data:micronaut-data-processor")
+
+	compileOnly("org.projectlombok:lombok")
+
+    implementation("io.micronaut:micronaut-runtime")
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+    implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
+    implementation("io.micronaut.data:micronaut-data-spring-jpa")
+    implementation("javax.annotation:javax.annotation-api")
+    implementation("io.micronaut:micronaut-validation")
+    implementation("com.webcohesion.ofx4j:ofx4j:1.27")
+
+    runtimeOnly("ch.qos.logback:logback-classic")
+//    runtimeOnly("com.h2database:h2")
+	implementation("com.h2database:h2")
+}
+
+
+application {
+    mainClass.set("muschterm.finance_api_rest.App")
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("16")
+    targetCompatibility = JavaVersion.toVersion("16")
+}
+
+
+
