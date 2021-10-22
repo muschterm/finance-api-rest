@@ -13,8 +13,9 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.UUID;
 
-@Entity
+@Entity(name = BankAccount.TABLE_NAME)
 @Table(
 	indexes = {
 		@Index(name = "IDXBankAccount_type", columnList = "type")
@@ -24,45 +25,62 @@ import javax.validation.constraints.Size;
 @Setter
 public class BankAccount extends Account {
 
-	@Column(length = 100, nullable = false)
-	@NotNull
-	@Size(max = 100)
-	private String name;
+	static final String TABLE_NAME = "bank_account";
+
+	static final String COLUMN_BANK_ID = "bank_id";
+	static final String COLUMN_TYPE = "type";
+
+	protected BankAccount() {
+	}
+
+	protected BankAccount(@NotNull String id) {
+		super(id);
+	}
+
+	public static BankAccount create(
+		FinancialInstitution financialInstitution,
+		BankStatementResponse ofxBankStatementResponse
+	) {
+		return new BankAccount(UUID.randomUUID().toString()).fromOfx(
+			financialInstitution,
+			ofxBankStatementResponse
+		);
+	}
+
 
 	/**
 	 * USA: Routing and transit number.
 	 */
-	@Column(length = 9, nullable = false)
+	@Column(name = COLUMN_BANK_ID, length = 9, nullable = false)
 	@NotNull
 	@Size(max = 9)
 	private String bankId;
 
-	@Column(length = 20, nullable = false)
+	@Column(name = COLUMN_TYPE, length = 20, nullable = false)
 	@Enumerated(EnumType.STRING)
 	@NotNull
 	@Size(max = 20)
 	private BankAccountType type;
 
-	public BankAccount from(
+	@Override
+	protected String shortName() {
+		return type.getName();
+	}
+
+	public BankAccount fromOfx(
 		FinancialInstitution financialInstitution,
 		BankStatementResponse ofxBankStatementResponse
 	) {
-		var accountDetails = ofxBankStatementResponse.getAccount();
+		var ofxBankAccountDetails = ofxBankStatementResponse.getAccount();
 
-		super.from(
+		super.fromOfx(
 			financialInstitution,
-			accountDetails,
+			ofxBankAccountDetails,
 			ofxBankStatementResponse
 		);
 
-		bankId = accountDetails.getBankId();
-		type = BankAccountType.lookup(accountDetails.getAccountType());
-
-		name = String.format(
-			"%s ...%s",
-			type.getName(),
-			number.substring(number.length() - 4)
-		);
+		bankId = ofxBankAccountDetails.getBankId();
+		type = BankAccountType.lookup(ofxBankAccountDetails.getAccountType());
 
 		return this;
 	}

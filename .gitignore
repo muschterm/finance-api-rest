@@ -4,6 +4,7 @@ Thumbs.db
 # Gradle
 .gradle
 build
+bin/
 
 # Maven
 target

@@ -1,7 +1,12 @@
 package muschterm.finance_api_rest.entities;
 
+import com.webcohesion.ofx4j.domain.data.common.AccountDetails;
 import com.webcohesion.ofx4j.domain.data.common.StatementResponse;
+import io.micronaut.data.annotation.DateCreated;
+import io.micronaut.data.annotation.DateUpdated;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.AttributeOverride;
@@ -20,9 +25,11 @@ import javax.persistence.Table;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Entity(name = Account.TABLE_NAME)
-@Inheritance(strategy = InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Table(
 	indexes = {
 		@Index(name = Account.IDX_NUMBER, columnList = Account.COLUMN_NUMBER),
@@ -44,6 +51,7 @@ public abstract class Account {
 	private static final String AVAILABLE_BALANCE = "available_balance";
 	static final String COLUMN_AVAILABLE_BALANCE_AMOUNT = AVAILABLE_BALANCE + "_" + BalanceDetail.COLUMN_AMOUNT;
 	static final String COLUMN_AVAILABLE_BALANCE_AS_OF_DATE = AVAILABLE_BALANCE + "_" + BalanceDetail.COLUMN_AS_OF_DATE;
+	static final String COLUMN_NAME = "name";
 
 	private static final String FK = "FK";
 	private static final String IDX = "IDX";
@@ -63,6 +71,13 @@ public abstract class Account {
 		"__" +
 		COLUMN_NUMBER;
 
+	protected Account() {
+	}
+
+	protected Account(@NotNull String id) {
+		this.id = id;
+	}
+
 	@Id
 	@Column(name = COLUMN_ID, length = 40)
 	@Size(max = 40)
@@ -78,7 +93,7 @@ public abstract class Account {
 
 	@Column(name = COLUMN_NUMBER, length = 22, nullable = false)
 	@Size(max = 22)
-	protected String number;
+	private String number;
 
 	@Embedded
 	@AttributeOverrides({
@@ -106,33 +121,54 @@ public abstract class Account {
 	})
 	private BalanceDetail ledgerBalance;
 
-	@Embedded
-	private Shared shared;
+	@Column(name = COLUMN_NAME, length = 100, nullable = false)
+	@NotNull
+	@Size(max = 100)
+	private String name;
 
+	static final String COLUMN_CREATED_TIMESTAMP = "created_timestamp";
+	static final String COLUMN_UPDATED_TIMESTAMP = "updated_timestamp";
+
+	@Column(name = COLUMN_CREATED_TIMESTAMP)
+	@DateCreated
+	private OffsetDateTime createdTimestamp;
+
+	@Column(name = COLUMN_UPDATED_TIMESTAMP)
+	@DateUpdated
 	@Version
-	private Integer version;
+	private OffsetDateTime updatedTimestamp;
 
-	public Account from(
+	protected abstract String shortName();
+
+	public String shortAccountNumber() {
+		return number.substring(number.length() - 4);
+	}
+
+	protected void fromOfx(
 		FinancialInstitution financialInstitution,
-		com.webcohesion.ofx4j.domain.data.common.AccountDetails accountDetails,
+		AccountDetails ofxAccountDetails,
 		StatementResponse ofxStatementResponse
 	) {
 		this.financialInstitution = financialInstitution;
-		number = accountDetails.getAccountNumber();
+		number = ofxAccountDetails.getAccountNumber();
 
+		var ofxAvailableBalance = ofxStatementResponse.getAvailableBalance();
 		if (availableBalance == null) {
-			availableBalance = new BalanceDetail();
+			availableBalance = new BalanceDetail(ofxAvailableBalance);
+		}
+		else {
+			availableBalance.fromOfx(ofxAvailableBalance);
 		}
 
-		availableBalance.from(ofxStatementResponse.getAvailableBalance());
-
+		var ofxLedgerBalance = ofxStatementResponse.getLedgerBalance();
 		if (ledgerBalance == null) {
-			ledgerBalance = new BalanceDetail();
+			ledgerBalance = new BalanceDetail(ofxLedgerBalance);
+		}
+		else {
+			ledgerBalance.fromOfx(ofxStatementResponse.getLedgerBalance());
 		}
 
-		ledgerBalance.from(ofxStatementResponse.getLedgerBalance());
-
-		return this;
+		name = String.format("%s ...%s", shortName(), shortAccountNumber());
 	}
 
 }

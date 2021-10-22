@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import javax.transaction.Transactional;
 
 @Repository
-@Transactional
 public interface AccountTransactionCategoryRepository
 	extends JpaRepository<AccountTransactionCategory, Integer>,
 	        JpaSpecificationExecutor<AccountTransactionCategory> {

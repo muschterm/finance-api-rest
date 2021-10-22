@@ -1,13 +1,16 @@
 package muschterm.finance_api_rest.entities;
 
+import io.micronaut.data.annotation.DateCreated;
+import io.micronaut.data.annotation.DateUpdated;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import muschterm.finance_api_rest.enums.TransactionType;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -21,6 +24,10 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.UUID;
 
 @Entity(name = AccountTransaction.TABLE_NAME)
 @Table(
@@ -72,6 +79,13 @@ public class AccountTransaction {
 		"__" +
 		COLUMN_MERCHANT_ID;
 
+	public AccountTransaction(
+		com.webcohesion.ofx4j.domain.data.common.Transaction ofxTransaction
+	) {
+		id = UUID.randomUUID().toString();
+
+		fromOfx(ofxTransaction);
+	}
 
 	@Id
 	@Column(name = COLUMN_ID, length = 40)
@@ -110,7 +124,7 @@ public class AccountTransaction {
 
 	@Column(name = COLUMN_POSTED_DATE, nullable = false)
 	@NotNull
-	private Instant postedDate;
+	private LocalDate postedDate;
 
 	// ****************
 	// not ofx specific
@@ -134,24 +148,27 @@ public class AccountTransaction {
 	@Size(max = 255)
 	private String description;
 
-	@Embedded
-	private Shared shared;
+	static final String COLUMN_CREATED_TIMESTAMP = "created_timestamp";
+	static final String COLUMN_UPDATED_TIMESTAMP = "updated_timestamp";
 
+	@Column(name = COLUMN_CREATED_TIMESTAMP)
+	@DateCreated
+	private OffsetDateTime createdTimestamp;
+
+	@Column(name = COLUMN_UPDATED_TIMESTAMP)
+	@DateUpdated
 	@Version
-	private Integer version;
+	private OffsetDateTime updatedTimestamp;
 
-	public AccountTransaction from(
-		Account account,
+	public AccountTransaction fromOfx(
 		com.webcohesion.ofx4j.domain.data.common.Transaction ofxTransaction
 	) {
-		this.account = account;
-
 		transactionId = ofxTransaction.getId();
 		type = TransactionType.lookup(ofxTransaction.getTransactionType());
 		name = ofxTransaction.getName();
 		memo = ofxTransaction.getMemo();
 		amount = ofxTransaction.getAmount();
-		postedDate = ofxTransaction.getDatePosted().toInstant();
+		postedDate = LocalDate.ofInstant(ofxTransaction.getDatePosted().toInstant(), ZoneId.systemDefault());
 
 		return this;
 	}
@@ -161,13 +178,13 @@ public class AccountTransaction {
 	}
 
 	public static Specification<AccountTransaction> betweenPostedDate(
-		Instant start,
-		Instant end
+		LocalDate start,
+		LocalDate end
 	) {
 		return (root, cq, cb) -> cb.between(root.get(COLUMN_POSTED_DATE), start, end);
 	}
 
-	public static Specification<AccountTransaction> sincePostedDate(Instant since) {
+	public static Specification<AccountTransaction> sincePostedDate(LocalDate since) {
 		return (root, cq, cb) -> cb.greaterThanOrEqualTo(root.get(COLUMN_POSTED_DATE), since);
 	}
 

@@ -1,21 +1,23 @@
 package muschterm.finance_api_rest.entities;
 
 import io.micronaut.data.annotation.DateCreated;
-import io.micronaut.data.annotation.DateUpdated;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 import javax.validation.constraints.Size;
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FinancialInstitution {
 
 	@Id
@@ -27,13 +29,21 @@ public class FinancialInstitution {
 	@Size(max = 32)
 	private String organization;
 
-	@Embedded
-	private Shared shared;
+	@DateCreated
+	private OffsetDateTime createdTimestamp;
 
 	@Version
-	private Integer version;
+	private OffsetDateTime updatedTimestamp;
 
-	public FinancialInstitution from(com.webcohesion.ofx4j.domain.data.signon.FinancialInstitution ofxFinancialInstitution) {
+	public static FinancialInstitution create(
+		com.webcohesion.ofx4j.domain.data.signon.FinancialInstitution ofxFinancialInstitution
+	) {
+		return new FinancialInstitution().fromOfx(ofxFinancialInstitution);
+	}
+
+	public FinancialInstitution fromOfx(
+		com.webcohesion.ofx4j.domain.data.signon.FinancialInstitution ofxFinancialInstitution
+	) {
 		id = ofxFinancialInstitution.getId();
 		organization = ofxFinancialInstitution.getOrganization();
 

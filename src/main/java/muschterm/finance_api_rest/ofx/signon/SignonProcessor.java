@@ -51,18 +51,17 @@ public final class SignonProcessor {
 	private FinancialInstitution getOrUpdateFinancialInsitution(
 		com.webcohesion.ofx4j.domain.data.signon.FinancialInstitution ofxFinancialInstitution
 	) {
-		FinancialInstitution financialInstitution;
-
-		var exists =
-			financialInstitutionRepository.existsById(ofxFinancialInstitution.getId());
-		if (exists) {
+		var financialInstitution = financialInstitutionRepository
+			.findById(ofxFinancialInstitution.getId())
+			.orElse(null);
+		if (financialInstitution != null) {
 			financialInstitution = financialInstitutionRepository.update(
-				new FinancialInstitution().from(ofxFinancialInstitution)
+				financialInstitution.fromOfx(ofxFinancialInstitution)
 			);
 		}
 		else {
 			financialInstitution = financialInstitutionRepository.save(
-				new FinancialInstitution().from(ofxFinancialInstitution)
+				FinancialInstitution.create(ofxFinancialInstitution)
 			);
 		}
 

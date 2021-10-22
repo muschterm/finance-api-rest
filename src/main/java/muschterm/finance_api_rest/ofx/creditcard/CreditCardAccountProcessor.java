@@ -23,29 +23,21 @@ public class CreditCardAccountProcessor {
 		FinancialInstitution financialInstitution,
 		CreditCardStatementResponse ofxCreditCardStatementResponse
 	) {
-		var creditCardAccountDetail =
-			creditCardAccountRepository.findByNumber(ofxCreditCardStatementResponse.getAccount()
-			                                                                       .getAccountNumber())
-			                           .orElse(null);
-		if (creditCardAccountDetail != null) {
-			creditCardAccountDetail = creditCardAccountDetail.from(
-				financialInstitution,
-				ofxCreditCardStatementResponse
-			);
+		var creditCardAccount = creditCardAccountRepository
+			.findByNumber(ofxCreditCardStatementResponse.getAccount().getAccountNumber())
+			.orElse(null);
+		if (creditCardAccount != null) {
+			creditCardAccount = creditCardAccount.fromOfx(financialInstitution, ofxCreditCardStatementResponse);
 
-			creditCardAccountDetail = creditCardAccountRepository.update(creditCardAccountDetail);
+			creditCardAccount = creditCardAccountRepository.update(creditCardAccount);
 		}
 		else {
-			creditCardAccountDetail = new CreditCardAccount().from(
-				financialInstitution,
-				ofxCreditCardStatementResponse
-			);
-			creditCardAccountDetail.setId(UUID.randomUUID().toString());
+			creditCardAccount = new CreditCardAccount(financialInstitution, ofxCreditCardStatementResponse);
 
-			creditCardAccountDetail = creditCardAccountRepository.save(creditCardAccountDetail);
+			creditCardAccount = creditCardAccountRepository.save(creditCardAccount);
 		}
 
-		return creditCardAccountDetail;
+		return creditCardAccount;
 	}
 
 }

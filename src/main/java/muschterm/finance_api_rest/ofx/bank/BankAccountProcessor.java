@@ -23,23 +23,22 @@ public class BankAccountProcessor {
 		FinancialInstitution financialInstitution,
 		BankStatementResponse ofxBankStatementResponse
 	) {
-		var bankAccountDetail =
-			bankAccountRepository.findByNumber(ofxBankStatementResponse.getAccount().getAccountNumber())
-			                     .orElse(null);
+		var bankAccount = bankAccountRepository
+			.findByNumber(ofxBankStatementResponse.getAccount().getAccountNumber())
+			.orElse(null);
 
-		if (bankAccountDetail != null) {
-			bankAccountDetail = bankAccountDetail.from(financialInstitution, ofxBankStatementResponse);
+		if (bankAccount != null) {
+			bankAccount = bankAccount.fromOfx(financialInstitution, ofxBankStatementResponse);
 
-			bankAccountDetail = bankAccountRepository.update(bankAccountDetail);
+			bankAccount = bankAccountRepository.update(bankAccount);
 		}
 		else {
-			bankAccountDetail = new BankAccount().from(financialInstitution, ofxBankStatementResponse);
-			bankAccountDetail.setId(UUID.randomUUID().toString());
+			bankAccount = BankAccount.create(financialInstitution, ofxBankStatementResponse);
 
-			bankAccountDetail = bankAccountRepository.save(bankAccountDetail);
+			bankAccount = bankAccountRepository.save(bankAccount);
 		}
 
-		return bankAccountDetail;
+		return bankAccount;
 	}
 
 }

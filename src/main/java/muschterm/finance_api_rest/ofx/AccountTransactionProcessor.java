@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 import java.util.UUID;
 
 @Singleton
-public class AccountTransactionProcessor {
+public final class AccountTransactionProcessor {
 
 	private final AccountTransactionRepository transactionRepository;
 
@@ -28,16 +28,19 @@ public class AccountTransactionProcessor {
 			var ofxTransactions = ofxTransactionList.getTransactions();
 			if (ofxTransactions != null) {
 				for (var ofxTransaction : ofxTransactions) {
-					var transaction =
-						transactionRepository.findByTransactionId(ofxTransaction.getId())
-						                     .orElse(null);
+					var transaction = transactionRepository
+						.findByTransactionId(ofxTransaction.getId())
+						.orElse(null);
 					if (transaction != null) {
-						transaction = transaction.from(account, ofxTransaction);
+						transaction = transaction.fromOfx(ofxTransaction);
+						transaction.setAccount(account);
+
 						transactionRepository.update(transaction);
 					}
 					else {
-						transaction = new AccountTransaction().from(account, ofxTransaction);
-						transaction.setId(UUID.randomUUID().toString());
+						transaction = new AccountTransaction(ofxTransaction);
+						transaction.setAccount(account);
+
 						transactionRepository.save(transaction);
 					}
 				}

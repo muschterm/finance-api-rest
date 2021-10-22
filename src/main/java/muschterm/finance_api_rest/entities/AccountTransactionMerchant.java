@@ -20,6 +20,7 @@ import javax.persistence.Table;
 import javax.persistence.Version;
 import javax.validation.constraints.Size;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(
@@ -50,11 +51,17 @@ public class AccountTransactionMerchant {
 	@Size(max = 255)
 	private String description;
 
-	@Embedded
-	private Shared shared;
+	static final String COLUMN_CREATED_TIMESTAMP = "created_timestamp";
+	static final String COLUMN_UPDATED_TIMESTAMP = "updated_timestamp";
 
+	@Column(name = COLUMN_CREATED_TIMESTAMP)
+	@DateCreated
+	private OffsetDateTime createdTimestamp;
+
+	@Column(name = COLUMN_UPDATED_TIMESTAMP)
+	@DateUpdated
 	@Version
-	private Integer version;
+	private OffsetDateTime updatedTimestamp;
 
 	public static Specification<AccountTransactionMerchant> containsName(String name) {
 		return (root, cq, cb) -> cb.like(root.get("name"), "%" + name + "%");

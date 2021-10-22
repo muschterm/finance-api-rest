@@ -6,34 +6,25 @@ import com.webcohesion.ofx4j.domain.data.banking.BankingResponseMessageSet;
 import com.webcohesion.ofx4j.domain.data.creditcard.CreditCardResponseMessageSet;
 import com.webcohesion.ofx4j.domain.data.signon.SignonResponseMessageSet;
 import com.webcohesion.ofx4j.io.AggregateUnmarshaller;
+import lombok.extern.slf4j.Slf4j;
 import muschterm.finance_api_rest.ofx.bank.BankProcessor;
 import muschterm.finance_api_rest.ofx.creditcard.CreditCardProcessor;
 import muschterm.finance_api_rest.ofx.signon.SignonProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.InputStream;
 
 @Singleton
-public class OfxHelper {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(OfxHelper.class);
-
-	private final SignonProcessor signonProcessor;
-	private final BankProcessor bankProcessor;
-	private final CreditCardProcessor creditCardProcessor;
+@Slf4j
+public record OfxHelper(
+	SignonProcessor signonProcessor,
+	BankProcessor bankProcessor,
+	CreditCardProcessor creditCardProcessor
+) {
 
 	@Inject
-	public OfxHelper(
-		SignonProcessor signonProcessor,
-		BankProcessor bankProcessor,
-		CreditCardProcessor creditCardProcessor
-	) {
-		this.signonProcessor = signonProcessor;
-		this.bankProcessor = bankProcessor;
-		this.creditCardProcessor = creditCardProcessor;
+	public OfxHelper {
 	}
 
 	public void handle(InputStream ofxInputStream) {
@@ -44,7 +35,7 @@ public class OfxHelper {
 			responseEnvelope = unmarshaller.unmarshal(ofxInputStream);
 		}
 		catch (Exception e) {
-			LOGGER.error("Couldn't parse OFX!", e);
+			log.error("Couldn't parse OFX!", e);
 
 			throw new UnsupportedOperationException(e);
 		}

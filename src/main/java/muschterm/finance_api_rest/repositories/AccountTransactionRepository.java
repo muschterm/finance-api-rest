@@ -9,7 +9,6 @@ import javax.transaction.Transactional;
 import java.util.Optional;
 
 @Repository
-@Transactional
 public interface AccountTransactionRepository
 	extends JpaRepository<AccountTransaction, String>,
 	        JpaSpecificationExecutor<AccountTransaction> {

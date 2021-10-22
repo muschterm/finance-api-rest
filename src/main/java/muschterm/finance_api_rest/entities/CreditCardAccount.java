@@ -1,37 +1,45 @@
 package muschterm.finance_api_rest.entities;
 
 import com.webcohesion.ofx4j.domain.data.creditcard.CreditCardStatementResponse;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
-@Entity
+@Entity(name = CreditCardAccount.TABLE_NAME)
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CreditCardAccount extends Account {
 
-	@Column(length = 100, nullable = false)
-	@NotNull
-	@Size(max = 100)
-	private String name;
+	static final String TABLE_NAME = "credit_card_account";
 
-	public CreditCardAccount from(
+	@Override
+	protected String shortName() {
+		return "Credit Card";
+	}
+
+	public CreditCardAccount(
 		FinancialInstitution financialInstitution,
 		CreditCardStatementResponse ofxCreditCardStatementResponse
 	) {
-		var accountDetails = ofxCreditCardStatementResponse.getAccount();
-
-		super.from(
+		fromOfx(
 			financialInstitution,
-			accountDetails,
 			ofxCreditCardStatementResponse
 		);
+	}
 
-		name = String.format("Credit Card ...%s", number.substring(number.length() - 4));
+	public CreditCardAccount fromOfx(
+		FinancialInstitution financialInstitution,
+		CreditCardStatementResponse ofxCreditCardStatementResponse
+	) {
+		super.fromOfx(
+			financialInstitution,
+			ofxCreditCardStatementResponse.getAccount(),
+			ofxCreditCardStatementResponse
+		);
 
 		return this;
 	}

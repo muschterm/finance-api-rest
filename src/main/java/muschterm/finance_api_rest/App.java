@@ -8,7 +8,7 @@ public class App {
 	public static void main(String[] args) throws Exception {
 		Server.createWebServer().start();
 		Micronaut.build(args)
-		         .packages("muschterm.finance_api_rest2")
+		         .packages("muschterm.finance_api_rest")
 		         .mainClass(App.class)
 		         .start();
 
