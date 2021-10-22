@@ -4,10 +4,9 @@ import com.webcohesion.ofx4j.domain.data.common.AccountDetails;
 import com.webcohesion.ofx4j.domain.data.common.StatementResponse;
 import io.micronaut.data.annotation.DateCreated;
 import io.micronaut.data.annotation.DateUpdated;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import muschterm.finance_api_rest.utils.DateUtil;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
@@ -70,13 +69,6 @@ public abstract class Account {
 		TABLE_NAME +
 		"__" +
 		COLUMN_NUMBER;
-
-	protected Account() {
-	}
-
-	protected Account(@NotNull String id) {
-		this.id = id;
-	}
 
 	@Id
 	@Column(name = COLUMN_ID, length = 40)
@@ -149,23 +141,33 @@ public abstract class Account {
 		AccountDetails ofxAccountDetails,
 		StatementResponse ofxStatementResponse
 	) {
+		if (id == null) {
+			id = UUID.randomUUID().toString();
+		}
+
 		this.financialInstitution = financialInstitution;
 		number = ofxAccountDetails.getAccountNumber();
 
 		var ofxAvailableBalance = ofxStatementResponse.getAvailableBalance();
 		if (availableBalance == null) {
-			availableBalance = new BalanceDetail(ofxAvailableBalance);
+			availableBalance = new BalanceDetail().fromOfx(ofxAvailableBalance);
 		}
 		else {
-			availableBalance.fromOfx(ofxAvailableBalance);
+			var newAsOfDate = DateUtil.handleStaticDate(ofxAvailableBalance.getAsOfDate());
+			if (newAsOfDate.isAfter(availableBalance.getAsOfDate())) {
+				availableBalance.fromOfx(ofxAvailableBalance);
+			}
 		}
 
 		var ofxLedgerBalance = ofxStatementResponse.getLedgerBalance();
 		if (ledgerBalance == null) {
-			ledgerBalance = new BalanceDetail(ofxLedgerBalance);
+			ledgerBalance = new BalanceDetail().fromOfx(ofxLedgerBalance);
 		}
 		else {
-			ledgerBalance.fromOfx(ofxStatementResponse.getLedgerBalance());
+			var newAsOfDate = DateUtil.handleStaticDate(ofxLedgerBalance.getAsOfDate());
+			if (newAsOfDate.isAfter(ledgerBalance.getAsOfDate())) {
+				ledgerBalance.fromOfx(ofxLedgerBalance);
+			}
 		}
 
 		name = String.format("%s ...%s", shortName(), shortAccountNumber());

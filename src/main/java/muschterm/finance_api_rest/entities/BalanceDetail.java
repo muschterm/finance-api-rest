@@ -1,29 +1,22 @@
 package muschterm.finance_api_rest.entities;
 
 import com.webcohesion.ofx4j.domain.data.common.BalanceInfo;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import muschterm.finance_api_rest.dtos.BalanceDTO;
+import muschterm.finance_api_rest.utils.DateUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.time.LocalDate;
-import java.time.ZoneId;
 
 @Embeddable
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BalanceDetail {
 
 	static final String COLUMN_AMOUNT = "amount";
 	static final String COLUMN_AS_OF_DATE = "as_of_date";
-
-	public BalanceDetail(BalanceInfo ofxBalanceInfo) {
-		fromOfx(ofxBalanceInfo);
-	}
 
 	@Column(name = COLUMN_AMOUNT, precision = 13, scale = 2, nullable = false)
 	private double amount;
@@ -40,7 +33,7 @@ public class BalanceDetail {
 
 	public BalanceDetail fromOfx(BalanceInfo ofxBalanceInfo) {
 		amount = ofxBalanceInfo.getAmount();
-		asOfDate = LocalDate.ofInstant(ofxBalanceInfo.getAsOfDate().toInstant(), ZoneId.systemDefault());
+		asOfDate = DateUtil.handleStaticDate(ofxBalanceInfo.getAsOfDate());
 
 		return this;
 	}

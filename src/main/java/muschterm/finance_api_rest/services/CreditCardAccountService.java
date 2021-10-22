@@ -1,24 +1,25 @@
-package muschterm.finance_api_rest.ofx.creditcard;
+package muschterm.finance_api_rest.services;
 
 import com.webcohesion.ofx4j.domain.data.creditcard.CreditCardStatementResponse;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import muschterm.finance_api_rest.entities.CreditCardAccount;
 import muschterm.finance_api_rest.entities.FinancialInstitution;
 import muschterm.finance_api_rest.repositories.CreditCardAccountRepository;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.UUID;
+import javax.transaction.Transactional;
 
 @Singleton
-public class CreditCardAccountProcessor {
+public class CreditCardAccountService {
 
 	private final CreditCardAccountRepository creditCardAccountRepository;
 
 	@Inject
-	public CreditCardAccountProcessor(CreditCardAccountRepository creditCardAccountRepository) {
+	public CreditCardAccountService(CreditCardAccountRepository creditCardAccountRepository) {
 		this.creditCardAccountRepository = creditCardAccountRepository;
 	}
 
+	@Transactional
 	public CreditCardAccount process(
 		FinancialInstitution financialInstitution,
 		CreditCardStatementResponse ofxCreditCardStatementResponse
@@ -27,14 +28,14 @@ public class CreditCardAccountProcessor {
 			.findByNumber(ofxCreditCardStatementResponse.getAccount().getAccountNumber())
 			.orElse(null);
 		if (creditCardAccount != null) {
-			creditCardAccount = creditCardAccount.fromOfx(financialInstitution, ofxCreditCardStatementResponse);
-
-			creditCardAccount = creditCardAccountRepository.update(creditCardAccount);
+			creditCardAccount = creditCardAccountRepository.update(
+				creditCardAccount.fromOfx(financialInstitution, ofxCreditCardStatementResponse)
+			);
 		}
 		else {
-			creditCardAccount = new CreditCardAccount(financialInstitution, ofxCreditCardStatementResponse);
-
-			creditCardAccount = creditCardAccountRepository.save(creditCardAccount);
+			creditCardAccount = creditCardAccountRepository.save(
+				new CreditCardAccount().fromOfx(financialInstitution, ofxCreditCardStatementResponse)
+			);
 		}
 
 		return creditCardAccount;

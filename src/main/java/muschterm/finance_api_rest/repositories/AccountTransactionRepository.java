@@ -5,7 +5,6 @@ import io.micronaut.data.jpa.repository.JpaRepository;
 import muschterm.finance_api_rest.entities.AccountTransaction;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import javax.transaction.Transactional;
 import java.util.Optional;
 
 @Repository

@@ -5,8 +5,6 @@ import io.micronaut.data.jpa.repository.JpaRepository;
 import muschterm.finance_api_rest.entities.AccountTransactionCategory;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import javax.transaction.Transactional;
-
 @Repository
 public interface AccountTransactionCategoryRepository
 	extends JpaRepository<AccountTransactionCategory, Integer>,

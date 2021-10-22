@@ -2,11 +2,10 @@ package muschterm.finance_api_rest.entities;
 
 import io.micronaut.data.annotation.DateCreated;
 import io.micronaut.data.annotation.DateUpdated;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import muschterm.finance_api_rest.enums.TransactionType;
+import muschterm.finance_api_rest.utils.DateUtil;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.CascadeType;
@@ -23,10 +22,8 @@ import javax.persistence.Table;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity(name = AccountTransaction.TABLE_NAME)
@@ -78,14 +75,6 @@ public class AccountTransaction {
 		TABLE_NAME +
 		"__" +
 		COLUMN_MERCHANT_ID;
-
-	public AccountTransaction(
-		com.webcohesion.ofx4j.domain.data.common.Transaction ofxTransaction
-	) {
-		id = UUID.randomUUID().toString();
-
-		fromOfx(ofxTransaction);
-	}
 
 	@Id
 	@Column(name = COLUMN_ID, length = 40)
@@ -163,12 +152,16 @@ public class AccountTransaction {
 	public AccountTransaction fromOfx(
 		com.webcohesion.ofx4j.domain.data.common.Transaction ofxTransaction
 	) {
+		if (id == null) {
+			id = UUID.randomUUID().toString();
+		}
+
 		transactionId = ofxTransaction.getId();
 		type = TransactionType.lookup(ofxTransaction.getTransactionType());
 		name = ofxTransaction.getName();
 		memo = ofxTransaction.getMemo();
 		amount = ofxTransaction.getAmount();
-		postedDate = LocalDate.ofInstant(ofxTransaction.getDatePosted().toInstant(), ZoneId.systemDefault());
+		postedDate = DateUtil.handleStaticDate(ofxTransaction.getDatePosted());
 
 		return this;
 	}

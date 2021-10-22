@@ -1,25 +1,24 @@
-package muschterm.finance_api_rest.ofx.creditcard;
+package muschterm.finance_api_rest.ofx;
 
 import com.webcohesion.ofx4j.domain.data.creditcard.CreditCardResponseMessageSet;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import muschterm.finance_api_rest.entities.FinancialInstitution;
-import muschterm.finance_api_rest.ofx.AccountTransactionProcessor;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import muschterm.finance_api_rest.services.CreditCardAccountService;
 
 @Singleton
 public class CreditCardProcessor {
 
-	private final CreditCardAccountProcessor creditCardAccountProcessor;
-	private final AccountTransactionProcessor transactionProcessor;
+	private final CreditCardAccountService creditCardAccountService;
+	private final AccountStatementProcessor accountStatementProcessor;
 
 	@Inject
 	public CreditCardProcessor(
-		CreditCardAccountProcessor creditCardAccountProcessor,
-		AccountTransactionProcessor transactionProcessor
+		CreditCardAccountService creditCardAccountService,
+		AccountStatementProcessor accountStatementProcessor
 	) {
-		this.creditCardAccountProcessor = creditCardAccountProcessor;
-		this.transactionProcessor = transactionProcessor;
+		this.creditCardAccountService = creditCardAccountService;
+		this.accountStatementProcessor = accountStatementProcessor;
 	}
 
 	public void process(
@@ -29,13 +28,12 @@ public class CreditCardProcessor {
 		var creditCardStatementResponseTransactions = creditCardResponseMessageSet.getStatementResponses();
 		for (var creditCardStatementResponseTransaction : creditCardStatementResponseTransactions) {
 			var creditCardStatementResponse = creditCardStatementResponseTransaction.getWrappedMessage();
-
-			var creditCardAccount = creditCardAccountProcessor.process(
+			var creditCardAccount = creditCardAccountService.process(
 				financialInstitution,
 				creditCardStatementResponse
 			);
 
-			transactionProcessor.process(creditCardAccount, creditCardStatementResponse);
+			accountStatementProcessor.process(creditCardAccount, creditCardStatementResponse);
 		}
 	}
 

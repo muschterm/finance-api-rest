@@ -13,7 +13,6 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.UUID;
 
 @Entity(name = BankAccount.TABLE_NAME)
 @Table(
@@ -29,24 +28,6 @@ public class BankAccount extends Account {
 
 	static final String COLUMN_BANK_ID = "bank_id";
 	static final String COLUMN_TYPE = "type";
-
-	protected BankAccount() {
-	}
-
-	protected BankAccount(@NotNull String id) {
-		super(id);
-	}
-
-	public static BankAccount create(
-		FinancialInstitution financialInstitution,
-		BankStatementResponse ofxBankStatementResponse
-	) {
-		return new BankAccount(UUID.randomUUID().toString()).fromOfx(
-			financialInstitution,
-			ofxBankStatementResponse
-		);
-	}
-
 
 	/**
 	 * USA: Routing and transit number.

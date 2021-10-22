@@ -25,7 +25,7 @@ public enum BankAccountType {
 	}
 
 	public static BankAccountType lookup(AccountType ofxAccountType) {
-		for (BankAccountType bankAccountType : values()) {
+		for (var bankAccountType : values()) {
 			if (bankAccountType.ofxAccountType == ofxAccountType) {
 				return bankAccountType;
 			}

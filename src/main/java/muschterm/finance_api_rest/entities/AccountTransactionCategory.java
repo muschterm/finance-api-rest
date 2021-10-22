@@ -9,7 +9,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -18,9 +17,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import javax.validation.constraints.Size;
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Set;
 
 @Entity

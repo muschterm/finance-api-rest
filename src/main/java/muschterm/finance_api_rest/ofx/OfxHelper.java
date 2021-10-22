@@ -6,29 +6,33 @@ import com.webcohesion.ofx4j.domain.data.banking.BankingResponseMessageSet;
 import com.webcohesion.ofx4j.domain.data.creditcard.CreditCardResponseMessageSet;
 import com.webcohesion.ofx4j.domain.data.signon.SignonResponseMessageSet;
 import com.webcohesion.ofx4j.io.AggregateUnmarshaller;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
-import muschterm.finance_api_rest.ofx.bank.BankProcessor;
-import muschterm.finance_api_rest.ofx.creditcard.CreditCardProcessor;
-import muschterm.finance_api_rest.ofx.signon.SignonProcessor;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.InputStream;
 
 @Singleton
 @Slf4j
-public record OfxHelper(
-	SignonProcessor signonProcessor,
-	BankProcessor bankProcessor,
-	CreditCardProcessor creditCardProcessor
-) {
+public class OfxHelper {
+
+	private final SignonProcessor signonProcessor;
+	private final BankProcessor bankProcessor;
+	private final CreditCardProcessor creditCardProcessor;
 
 	@Inject
-	public OfxHelper {
+	public OfxHelper(
+		SignonProcessor signonProcessor,
+		BankProcessor bankProcessor,
+		CreditCardProcessor creditCardProcessor
+	) {
+		this.signonProcessor = signonProcessor;
+		this.bankProcessor = bankProcessor;
+		this.creditCardProcessor = creditCardProcessor;
 	}
 
 	public void handle(InputStream ofxInputStream) {
-		AggregateUnmarshaller<ResponseEnvelope> unmarshaller = new AggregateUnmarshaller<>(ResponseEnvelope.class);
+		var unmarshaller = new AggregateUnmarshaller<>(ResponseEnvelope.class);
 
 		ResponseEnvelope responseEnvelope;
 		try {

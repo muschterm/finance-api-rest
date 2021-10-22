@@ -1,6 +1,6 @@
 plugins {
-    id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("io.micronaut.application") version "2.0.3"
+    id("com.github.johnrengelman.shadow") version "7.1.0"
+    id("io.micronaut.application") version "2.0.6"
 }
 
 version = "0.1"
@@ -27,12 +27,13 @@ dependencies {
 
     implementation("io.micronaut:micronaut-runtime")
     implementation("io.micronaut:micronaut-http-client")
-    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
     implementation("io.micronaut.data:micronaut-data-spring-jpa")
+	implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     implementation("javax.annotation:javax.annotation-api")
     implementation("io.micronaut:micronaut-validation")
-    implementation("com.webcohesion.ofx4j:ofx4j:1.27")
+
+    implementation('com.webcohesion.ofx4j:ofx4j:1.31')
 
     runtimeOnly("ch.qos.logback:logback-classic")
 //    runtimeOnly("com.h2database:h2")
@@ -40,8 +41,8 @@ dependencies {
 
 	testAnnotationProcessor("io.micronaut:micronaut-inject-java")
 	testImplementation("org.junit.jupiter:junit-jupiter-api")
-	testImplementation("io.micronaut.test:micronaut-test-junit5:2.3.7")
-	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.1")
+	testImplementation('io.micronaut.test:micronaut-test-junit5')
+	testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine')
 }
 
 
@@ -50,6 +51,6 @@ application {
 }
 
 java {
-    sourceCompatibility = JavaVersion.toVersion("16")
-    targetCompatibility = JavaVersion.toVersion("16")
+    sourceCompatibility = JavaVersion.toVersion("17")
+    targetCompatibility = JavaVersion.toVersion("17")
 }
