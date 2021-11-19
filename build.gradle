@@ -1,6 +1,11 @@
 plugins {
     id("com.github.johnrengelman.shadow") version "7.1.0"
-    id("io.micronaut.application") version "2.0.6"
+    id("io.micronaut.application") version "2.0.8"
+}
+
+// Gradle 7.3 added test changes; the MN plugin overrides the test configuration without setting the JUnitPlatform.
+tasks.withType(Test).configureEach {
+	useJUnitPlatform()
 }
 
 version = "0.1"
